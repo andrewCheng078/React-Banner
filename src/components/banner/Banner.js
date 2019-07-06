@@ -11,7 +11,7 @@ export default class Banner extends Component {
   static defaultProps = {
     openAtStart: true, // [boolean] true | false
     // 設定啟動後是否要自動開或合，若設為false，就不要自勳開合；若為true是馬上自動開合；若為數字是幾毫秒之後開合
-    autoToggle: true, // [boolean|number] true | false | 3000
+    autoToggle: false, // [boolean|number] true | false | 3000
     // 設定收合展開按鈕
     button: {
       closeText: "收合", // [string]
@@ -36,7 +36,7 @@ export default class Banner extends Component {
     transition: true,
     transitionClass: "",
     classText: "收合",
-    currentClass: OPENED // open or close
+    currentClass: OPENED
   };
 
   demoClick() {
@@ -49,9 +49,15 @@ export default class Banner extends Component {
   componentDidMount() {
     const { openAtStart, autoToggle, transition } = this.props;
     openAtStart ? this.changeClass(OPENED) : this.changeClass(CLOSED);
-    if (autoToggle) {
-      this.toggleLoop(); // 还没好 
+
+    if(typeof autoToggle === "number"){
+      this.toggleLoop(autoToggle)
+    }else if(typeof autoToggle === "boolean"){
+      if (autoToggle) {
+        this.toggleLoop(); 
+      }
     }
+    
     if (transition) {
       this.setState({ transitionClass: "transition" });
     }
@@ -65,7 +71,16 @@ export default class Banner extends Component {
     this.state.currentClass === OPENED ? this.changeClass(CLOSING) : this.changeClass(OPENING);
   }
 
-  toggleLoop() {}
+  toggleLoop(n) {
+    if(typeof n === "number"){
+      setTimeout(()=>{
+        this.state.currentClass === OPENED ? this.changeClass(CLOSED) : this.changeClass(OPENED);
+      },n)
+    }else{
+      this.state.currentClass === OPENED ? this.changeClass(CLOSED) : this.changeClass(OPENED);
+    }
+   
+  }
 
   changeClass(className) {
     this.setState({
