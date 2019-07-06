@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import "./Banner.css";
 import img from "./imgs/1200x380.png";
 
+
 const CLOSED = 'closed'
 const CLOSING = 'closing'
 const OPENED = 'opened'
@@ -26,11 +27,13 @@ export default class Banner extends Component {
       [OPENING]: "opening" // [string]
     },
     // 是否要有transition效果
-    transition: true
+    transition: true,
+    whenTransition:function(){
+      console.log('Transition!!!!')
+    }
   };
 
   state = {
-    demoClick: true,
     openAtStart: false,
     autoToggle: false,
     transition: true,
@@ -39,17 +42,11 @@ export default class Banner extends Component {
     currentClass: OPENED
   };
 
-  demoClick() {
-    let { demoClick } = this.state;
-    this.setState({
-      demoClick: !demoClick
-    });
-  }
+
 
   componentDidMount() {
     const { openAtStart, autoToggle, transition } = this.props;
     openAtStart ? this.changeClass(OPENED) : this.changeClass(CLOSED);
-
     if(typeof autoToggle === "number"){
       this.toggleLoop(autoToggle)
     }else if(typeof autoToggle === "boolean"){
@@ -61,14 +58,27 @@ export default class Banner extends Component {
     if (transition) {
       this.setState({ transitionClass: "transition" });
     }
+
   }
 
   transitionendHandle = () => {
-    this.state.currentClass === OPENING ? this.changeClass(OPENED) : this.changeClass(CLOSED)
+    clearInterval(this.time);
+    console.log('end')
+    this.state.currentClass === OPENING ? this.changeClass(OPENED) : this.changeClass(CLOSED);
+    if(this.state.currentClass === OPENED||this.state.currentClass === OPENING){this.setState({classText:'收合'})}
+    if(this.state.currentClass === CLOSED||this.state.currentClass === CLOSING){this.setState({classText:'展開'})}
+    
   };
 
   toggle() {
-    this.state.currentClass === OPENED ? this.changeClass(CLOSING) : this.changeClass(OPENING);
+    if(this.state.currentClass === OPENED){
+      this.changeClass(CLOSING);
+      this.intervalTime();
+    }else if(this.state.currentClass === CLOSED){
+      this.changeClass(OPENING);
+      this.intervalTime();
+    }
+    // this.state.currentClass === OPENED ? this.changeClass(CLOSING)  : this.changeClass(OPENING);
   }
 
   toggleLoop(n) {
@@ -87,16 +97,16 @@ export default class Banner extends Component {
       currentClass: className
     });
   }
+  
+  intervalTime(){
+    this.time = setInterval(()=>this.props.whenTransition(),25);
+  }
 
   render() {
-    const { demoClick, classText, currentClass, transitionClass } = this.state;
+    const { classText, currentClass, transitionClass } = this.state;
     return (
       <div>
-        <button className="run-css" onClick={this.demoClick.bind(this)}>
-          CSS slideToggle
-        </button>
-        <div className="cont">Toggle this div</div>
-        {demoClick ? <p>show</p> : null}
+      
         <div
           className={`banner  ${this.props.class[currentClass]} ${transitionClass}`}
           onTransitionEnd={this.transitionendHandle}
@@ -110,10 +120,13 @@ export default class Banner extends Component {
             />
           </a>
           <button className="wrap_btn" onClick={this.toggle.bind(this)}>
-            {classText}
+            { classText }
           </button>
         </div>
       </div>
     );
   }
 }
+
+//button text
+// transitionEnd call back
