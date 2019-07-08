@@ -9,87 +9,83 @@ const OPENED = 'opened'
 const OPENING = 'opening'
 
 export default class Banner extends Component {
-  static defaultProps = {
-    openAtStart: true, // [boolean] true | false
-    // 設定啟動後是否要自動開或合，若設為false，就不要自勳開合；若為true是馬上自動開合；若為數字是幾毫秒之後開合
-    autoToggle: false, // [boolean|number] true | false | 3000
-    // 設定收合展開按鈕
-    button: {
-      closeText: "收合", // [string]
-      openText: "展開", // [string]
-      class: "btn" // [string]
-    },
-    // 設定模組在各狀態時的class
-    class: {
-      [CLOSED]: "closed", // [string]
-      [CLOSING]: "closing", // [string]
-      [OPENED]: "opened", // [string]
-      [OPENING]: "opening" // [string]
-    },
-    // 是否要有transition效果
-    transition: true,
-    whenTransition:function(){
-      console.log('Transition!!!!')
-    }
-  };
+  // static defaultProps = {
+  //   openAtStart: true, // [boolean] true | false
+  //   // 設定啟動後是否要自動開或合，若設為false，就不要自勳開合；若為true是馬上自動開合；若為數字是幾毫秒之後開合
+  //   autoToggle: false, // [boolean|number] true | false | 3000
+  //   // 設定收合展開按鈕
+  //   // 是否要有transition效果
+  //   transition: true,
+  //   whenTransition:function(){
+  //     console.log('Transition!!!!')
+  //   }
+  // };
 
   state = {
-    openAtStart: false,
+    openAtStart: true,
     autoToggle: false,
     transition: true,
     transitionClass: "",
-    classText: "收合",
-    currentClass: OPENED
+    classText: "",
+    currentClass: OPENED,
+    whenTransition: function () {
+      console.log(' default callback !!!! ')
+    }
   };
 
 
 
   componentDidMount() {
-    const { openAtStart, autoToggle, transition } = this.props;
-    openAtStart ? this.changeClass(OPENED) : this.changeClass(CLOSED);
-    if(typeof autoToggle === "number"){
-      this.toggleLoop(autoToggle)
-    }else if(typeof autoToggle === "boolean"){
+    let { openAtStart, autoToggle, transition } = this.props;
+    if (openAtStart === undefined) { openAtStart = this.state.openAtStart };
+    if (autoToggle === undefined) { autoToggle = this.state.autoToggle };
+    if (transition === undefined) { transition = this.state.transition };
+    openAtStart ? this.bannerOpen() : this.bannerClose();
+    transition ? this.setState({ transitionClass: "transition" }) : this.setState({ transitionClass: "transitionClose" });
+
+    if (typeof autoToggle === "number") {
+      this.autoToggle(autoToggle)
+    } else if (typeof autoToggle === "boolean") {
       if (autoToggle) {
-        this.toggleLoop(); 
+        this.autoToggle();
       }
     }
-    
-    if (transition) {
-      this.setState({ transitionClass: "transition" });
-    }
+
+
 
   }
 
-  transitionendHandle = () => {
+
+
+  transitionendHandle() {
     clearInterval(this.time);
-    console.log('end')
+    console.log('end');
     this.state.currentClass === OPENING ? this.changeClass(OPENED) : this.changeClass(CLOSED);
-    if(this.state.currentClass === OPENED||this.state.currentClass === OPENING){this.setState({classText:'收合'})}
-    if(this.state.currentClass === CLOSED||this.state.currentClass === CLOSING){this.setState({classText:'展開'})}
-    
+    if (this.state.currentClass === OPENED || this.state.currentClass === OPENING) { this.setState({ classText: '收合' }) }
+    if (this.state.currentClass === CLOSED || this.state.currentClass === CLOSING) { this.setState({ classText: '展開' }) }
+
   };
 
   toggle() {
-    if(this.state.currentClass === OPENED){
+    if (this.state.currentClass === OPENED) {
       this.changeClass(CLOSING);
       this.intervalTime();
-    }else if(this.state.currentClass === CLOSED){
+    } else if (this.state.currentClass === CLOSED) {
       this.changeClass(OPENING);
       this.intervalTime();
     }
     // this.state.currentClass === OPENED ? this.changeClass(CLOSING)  : this.changeClass(OPENING);
   }
 
-  toggleLoop(n) {
-    if(typeof n === "number"){
-      setTimeout(()=>{
+  autoToggle(n) {
+    if (typeof n === "number") {
+      setTimeout(() => {
         this.state.currentClass === OPENED ? this.changeClass(CLOSED) : this.changeClass(OPENED);
-      },n)
-    }else{
+      }, n)
+    } else {
       this.state.currentClass === OPENED ? this.changeClass(CLOSED) : this.changeClass(OPENED);
     }
-   
+
   }
 
   changeClass(className) {
@@ -97,19 +93,43 @@ export default class Banner extends Component {
       currentClass: className
     });
   }
-  
-  intervalTime(){
-    this.time = setInterval(()=>this.props.whenTransition(),25);
+
+  intervalTime() {
+
+    if (this.props.whenTransition === undefined) {
+      this.time = setInterval(() => {
+        this.state.whenTransition();
+      }, 25);
+    } else {
+      this.time = setInterval(() => {
+        this.props.whenTransition();
+      }, 25);
+    }
+
+  }
+
+  bannerOpen() {
+    this.changeClass(OPENED);
+    this.setState({ classText: '收合' })
+  }
+
+  bannerClose() {
+    this.changeClass(CLOSED)
+    this.setState({ classText: '展開' })
+  }
+
+  bannerToggle() {
+    this.state.currentClass === OPENED ? this.bannerClose() : this.bannerOpen();
   }
 
   render() {
     const { classText, currentClass, transitionClass } = this.state;
     return (
       <div>
-      
+
         <div
-          className={`banner  ${this.props.class[currentClass]} ${transitionClass}`}
-          onTransitionEnd={this.transitionendHandle}
+          className={`banner  ${currentClass} ${transitionClass}`}
+          onTransitionEnd={ this.transitionendHandle.bind(this) }
         >
           <a className="wrap">
             <img
@@ -119,8 +139,8 @@ export default class Banner extends Component {
               alt="輸入廣告促銷說明文字"
             />
           </a>
-          <button className="wrap_btn" onClick={this.toggle.bind(this)}>
-            { classText }
+          <button className="wrap_btn" onClick={ this.toggle.bind(this) }>
+            {classText}
           </button>
         </div>
       </div>
