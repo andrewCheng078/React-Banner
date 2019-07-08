@@ -55,3 +55,6 @@
         height: 20px;
         border-width: 0 1px;
     }
+    .transitionClose{
+        transition: height .000001s;
+    }
