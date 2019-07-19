@@ -30,7 +30,8 @@ export default class Banner extends Component {
     currentClass: OPENED,
     whenTransition: function () {
       console.log(' default callback !!!! ')
-    }
+    },
+    imgClass:'',
   };
 
 
@@ -67,12 +68,19 @@ export default class Banner extends Component {
   };
 
   toggle() {
+    const{imgClass} = this.state;
     if (this.state.currentClass === OPENED) {
       this.changeClass(CLOSING);
       this.intervalTime();
+      this.setState({
+        imgClass:false
+      })
     } else if (this.state.currentClass === CLOSED) {
       this.changeClass(OPENING);
       this.intervalTime();
+      this.setState({
+        imgClass:true
+      })
     }
     // this.state.currentClass === OPENED ? this.changeClass(CLOSING)  : this.changeClass(OPENING);
   }
@@ -89,8 +97,10 @@ export default class Banner extends Component {
   }
 
   changeClass(className) {
+    let imgClass = this.state.imgClass;
     this.setState({
-      currentClass: className
+      currentClass: className,
+      imgClass:!imgClass,
     });
   }
 
@@ -123,7 +133,7 @@ export default class Banner extends Component {
   }
 
   render() {
-    const { classText, currentClass, transitionClass } = this.state;
+    const { classText, currentClass, transitionClass,imgClass } = this.state;
     return (
       <div>
 
@@ -133,13 +143,13 @@ export default class Banner extends Component {
         >
           <a className="wrap">
             <img
-              className="img"
+              className={`img ${imgClass?'moveImg':''}`}
               src={img}
               title="輸入廣告促銷說明文字"
               alt="輸入廣告促銷說明文字"
             />
           </a>
-          <button className="wrap_btn" onClick={ this.toggle.bind(this) }>
+          <button className="btn" onClick={ this.toggle.bind(this) }>
             {classText}
           </button>
         </div>
