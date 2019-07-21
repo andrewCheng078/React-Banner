@@ -31,7 +31,7 @@ export default class Banner extends Component {
     whenTransition: function () {
       console.log(' default callback !!!! ')
     },
-    imgClass:'',
+    imgClass:null,
   };
 
 
@@ -62,6 +62,14 @@ export default class Banner extends Component {
     clearInterval(this.time);
     console.log('end');
     this.state.currentClass === OPENING ? this.changeClass(OPENED) : this.changeClass(CLOSED);
+    if(this.state.currentClass === OPENING){
+      this.changeClass(OPENED)
+    }else{
+      this.changeClass(CLOSED)
+      this.setState({
+        imgClass:true,
+      })
+    }
     if (this.state.currentClass === OPENED || this.state.currentClass === OPENING) { this.setState({ classText: '收合' }) }
     if (this.state.currentClass === CLOSED || this.state.currentClass === CLOSING) { this.setState({ classText: '展開' }) }
 
@@ -72,15 +80,13 @@ export default class Banner extends Component {
     if (this.state.currentClass === OPENED) {
       this.changeClass(CLOSING);
       this.intervalTime();
-      this.setState({
-        imgClass:false
-      })
+
     } else if (this.state.currentClass === CLOSED) {
       this.changeClass(OPENING);
-      this.intervalTime();
       this.setState({
-        imgClass:true
+        imgClass:false,
       })
+      this.intervalTime();
     }
     // this.state.currentClass === OPENED ? this.changeClass(CLOSING)  : this.changeClass(OPENING);
   }
@@ -100,7 +106,6 @@ export default class Banner extends Component {
     let imgClass = this.state.imgClass;
     this.setState({
       currentClass: className,
-      imgClass:!imgClass,
     });
   }
 
